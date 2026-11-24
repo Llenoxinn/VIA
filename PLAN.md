@@ -13,14 +13,14 @@ Build and honestly evaluate a tool-using LLM agent that classifies **missense** 
 ## 3. Scope
 ### 3.1 In scope
 - Missense SNVs on GRCh38 only (D3).
-- Tools: Ensembl VEP (consequence), gnomAD (population frequency), AlphaMissense (score), UniProt (protein features), AlphaFold DB (pLDDT confidence at the residue).
+- Tools: Ensembl VEP (consequence), gnomAD (population frequency), AlphaMissense (score; M1 uses Ensembl VEP `?AlphaMissense=1` live endpoint, with optional local TSV index in `data/` if needed at M4), UniProt (protein features), AlphaFold DB (pLDDT confidence at the residue).
 - Every tool returns `found` / `not_found` / `error`. Errors are retried, never cached; if a key tool still errors, the answer is `uncertain` and the run is flagged (D7).
 - ClinVar used only as ground truth (and as a tool outside eval mode).
-- CLI only. One LLM provider: **Google Gemini Flash, free tier**, for both the agent and the no-tools baseline; every response cached; exact model version recorded (D5). Groq is a contingency, not built: switching needs a plan update (R9).
+- CLI (`via inspect`, `via ui`) + lightweight interactive local Web UI on top of the JSON output. One LLM provider: **Google Gemini Flash, free tier**, for both the agent and the no-tools baseline; every response cached; exact model version recorded (D5). Groq is a contingency, not built: switching needs a plan update (R9).
 
 ### 3.2 Out of scope (needs explicit user request)
 - Indels, structural variants, copy-number changes, GRCh37, non-missense variants.
-- Web UI, database, Docker, cloud deploy.
+- Cloud-hosted web app, database, Docker, cloud deploy.
 - Full ACMG/AMP criteria engine.
 - Fine-tuning or training models.
 - Multiple LLM providers in code (a Groq adapter), multi-agent setups.
@@ -51,8 +51,8 @@ Main, Secondary and Post-cutoff are mutually disjoint (no variant scored twice).
 ## 4. Milestones (≈ 1 week each, no deadline — D8)
 | # | Milestone | Done when |
 |---|---|---|
-| M0 | Docs + prerequisites | These docs exist, git initialised, env set up, smoke script hits each API once, Gemini free limits checked |
-| M1 | Tools | Each tool returns a typed found/not_found/error result; offline fixture tests pass |
+| M0 | Docs + prerequisites | Docs exist, git initialised, env set up, smoke script hits APIs (Gemini key check + model pin deferred until M2 live runs) |
+| M1 | Tools | Each tool returns a typed found/not_found/error result; offline fixture tests + leakage guard pass; `via inspect` and interactive `via ui` work |
 | M2 | Agent loop | Agent classifies one variant end to end; report schema validated; claims cite call IDs |
 | M3 | Eval datasets + leakage guard | All §3.3 sets built with seed; counts reported (R7); leakage test passes |
 | M4 | Baselines + metrics | All 4 methods scored per §3.4; results table generated |

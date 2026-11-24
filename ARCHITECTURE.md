@@ -1,48 +1,61 @@
 # ARCHITECTURE.md
 
-Status: planned (M0). Update as code lands (P5).
+Status: M1 implemented (tools, leakage guard, interactive local Web UI). Update as code lands (P5).
 
 ## Flow
 ```
 variant (chr:pos:ref:alt)
-   └─► agent loop (Gemini Flash, tool calling)
+   └─► M1 runner / M2 agent loop (Gemini Flash, tool calling)
           ├─ vep_consequence      → gene, transcript, amino-acid change
           ├─ gnomad_frequency     → allele frequency
           ├─ alphamissense_score  → 0–1 score
           ├─ uniprot_features     → domains/sites at residue
           ├─ alphafold_plddt      → structure confidence at residue
           └─ clinvar_lookup       → DISABLED in eval mode
-   └─► report (pydantic): label ∈ {likely_pathogenic, likely_benign, uncertain},
-                          evidence[] each with tool_call_id, summary
+   └─► M1: InspectionResult JSON / interactive local Web UI (`via ui`)
+   └─► M2: report (pydantic): label ∈ {likely_pathogenic, likely_benign, uncertain},
+                              evidence[] each with tool_call_id, summary
 ```
 
-## Planned layout
+## Layout
 ```
-pyproject.toml  pinned deps (P4), `via` CLI entry point
+pyproject.toml     pinned deps (P4), `via` CLI entry point
 src/via/
-  cli.py        `via classify chr:pos:ref:alt`
-  tools/        one module per data source, typed outputs
-  agent.py      tool-calling loop, step limit, trace
-  schema.py     Variant, ToolResult, Report
-  cache.py      disk cache for HTTP (in .cache/, git-ignored)
-eval/
-  dataset.py    ClinVar sets per PLAN §3.3 (seeded, missense only)
-  baselines.py  gnomAD rule, AlphaMissense threshold, LLM no-tools
-  run.py        runs methods, writes eval/results/ (git-ignored)
-tests/          offline, fixtures in tests/fixtures/; test_leakage.py (P1)
-scripts/        smoke_apis.py (LIVE: network, not run by pytest)
-data/           downloads, git-ignored
+  cli.py           `via inspect chr:pos:ref:alt` and `via ui`
+  runner.py        runs M1 tools in sequence and builds InspectionResult
+  schema.py        Variant, ToolResult, EvidenceItem, Report, InspectionResult
+  cache.py         atomic disk cache in .cache/ (never caches errors)
+  http.py          shared httpx client with polite User-Agent and retries
+  web.py           local ThreadingHTTPServer for interactive Web UI + /api/inspect
+  static/
+    index.html     interactive local Web UI (evidence board, tool trace, raw JSON)
+  tools/
+    errors.py      EvalModeLeakageError exception for eval mode (P1)
+    _common.py     timing, cache lookup, HTTP error wrapping
+    _sanitize.py   strips colocated_variants/ClinVar/HGMD/COSMIC from VEP
+    vep.py         Ensembl VEP REST consequence + UniProt mapping
+    gnomad.py      gnomAD v4 GraphQL allele frequencies & popmax
+    alphamissense.py Ensembl VEP ?AlphaMissense=1 score
+    uniprot.py     UniProtKB structural/functional features (safe fields only)
+    alphafold.py   AlphaFold DB API + confidence_v6.json pLDDT
+    clinvar.py     NCBI E-utilities lookup (raises EvalModeLeakageError in eval)
+  agent.py         (M2) tool-calling loop, step limit, trace
+eval/              (M3–M4) dataset.py, baselines.py, run.py
+tests/             offline, fixtures in tests/fixtures/; test_schema_and_cache.py,
+                   test_tools.py, test_leakage.py, test_web.py
+scripts/           smoke_apis.py (LIVE: network, not run by pytest)
+data/              downloads, git-ignored
 ```
 
 ## Data sources
-| Source | Access | Licence (verify at M1, P6) |
+| Source | Access | Licence (verified at M1, P6) |
 |---|---|---|
-| Ensembl VEP REST | rest.ensembl.org | Open, rate-limited (~15 req/s) |
-| gnomAD | GraphQL API, gnomad.broadinstitute.org | ODbL / open |
-| AlphaMissense | Precomputed TSV (Zenodo/GCS) | CC BY-NC-SA 4.0 |
+| Ensembl VEP REST | rest.ensembl.org | Open REST resource (Apache 2.0 software, CC BY 4.0 docs), ~15 req/s |
+| gnomAD | GraphQL API, gnomad.broadinstitute.org | CC0 1.0 (Broad Institute) |
+| AlphaMissense | Ensembl VEP `?AlphaMissense=1` (M1); optional TSV in `data/` | CC BY 4.0 (updated Mar 2024; 2023 TSV header reads CC BY-NC-SA 4.0) |
 | UniProt | rest.uniprot.org | CC BY 4.0 |
-| AlphaFold DB | alphafold.ebi.ac.uk API | CC BY 4.0 |
-| ClinVar | NCBI FTP variant_summary.txt.gz | Public domain |
+| AlphaFold DB | alphafold.ebi.ac.uk API + confidence JSON | CC BY 4.0 |
+| ClinVar | NCBI E-utilities (M1 tool) + FTP variant_summary.txt.gz | Public domain (NCBI/NIH) |
 
 ## Key decisions
 - **Leakage guard lives in the tool layer**, not the prompt: in eval mode the ClinVar tool is not registered and VEP clinical fields are stripped before the LLM sees them.
