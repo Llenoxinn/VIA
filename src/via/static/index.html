@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIA — Variant Interpretation Workbench</title>
+  <style>
+    :root {
+      --bg: #FBFBFA;
+      --surface: #FFFFFF;
+      --surface-subtle: #F7F6F3;
+      --border: #EAEAEA;
+      --text: #111111;
+      --text-body: #2F3437;
+      --muted: #787774;
+      --red-bg: #FDEBEC;
+      --red-fg: #9F2F2D;
+      --blue-bg: #E1F3FE;
+      --blue-fg: #1F6C9F;
+      --green-bg: #EDF3EC;
+      --green-fg: #346538;
+      --yellow-bg: #FBF3DB;
+      --yellow-fg: #956400;
+      --sans: 'SF Pro Display', 'Geist Sans', 'Segoe UI', 'Helvetica Neue', sans-serif;
+      --serif: 'Lyon Text', 'Newsreader', Georgia, serif;
+      --mono: 'Geist Mono', 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text-body);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(251, 251, 250, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      font-family: var(--serif);
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pill-neutral { background: var(--surface-subtle); color: var(--muted); border: 1px solid var(--border); }
+    .pill-green { background: var(--green-bg); color: var(--green-fg); }
+    .pill-red { background: var(--red-bg); color: var(--red-fg); }
+    .pill-yellow { background: var(--yellow-bg); color: var(--yellow-fg); }
+    .pill-blue { background: var(--blue-bg); color: var(--blue-fg); }
+
+    .mode-switch {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .mode-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .mode-btn[aria-pressed="true"] {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .mode-btn[data-mode="eval"][aria-pressed="true"] {
+      background: var(--blue-bg);
+      color: var(--blue-fg);
+      border-color: transparent;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .hero {
+      margin-bottom: 28px;
+    }
+
+    .hero-kicker {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1.hero-title {
+      font-family: var(--serif);
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin: 0 0 10px;
+      font-weight: 600;
+    }
+
+    .hero-desc {
+      margin: 0 0 22px;
+      color: var(--muted);
+      max-width: 68ch;
+    }
+
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .variant-input {
+      flex: 1 1 280px;
+      font-family: var(--mono);
+      font-size: 15px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+
+    .variant-input:focus {
+      border-color: var(--text);
+      background: var(--surface);
+    }
+
+    .btn-primary {
+      background: #111111;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 20px;
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background-color 150ms ease, transform 120ms ease;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: #333333; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.98); }
+    .btn-primary:disabled { opacity: 0.55; cursor: wait; }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover { background: var(--surface-subtle); }
+
+    .samples-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .samples-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 4px;
+    }
+
+    .sample-chip {
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--text-body);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sample-chip:hover {
+      border-color: #CFCFCF;
+      background: var(--surface);
+    }
+
+    .sample-coord {
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    kbd {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 1px 6px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface-subtle);
+      color: var(--muted);
+    }
+
+    .eval-banner {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--blue-bg);
+      color: var(--blue-fg);
+      border: 1px solid #C8E3F6;
+      font-size: 13px;
+    }
+
+    .eval-banner.visible { display: flex; align-items: center; gap: 10px; }
+
+    .error-banner {
+      display: none;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--red-bg);
+      color: var(--red-fg);
+      border: 1px solid #F5CFD2;
+      font-size: 13px;
+    }
+
+    .error-banner.visible { display: block; }
+
+    .history-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .history-item {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text-body);
+      cursor: pointer;
+    }
+
+    .history-item.active {
+      border-color: var(--text);
+      background: var(--surface-subtle);
+      font-weight: 600;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 20px;
+    }
+
+    .result-variant {
+      font-family: var(--serif);
+      font-size: 28px;
+      line-height: 1.15;
+      color: var(--text);
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+
+    .result-sub {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 10px 16px;
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+
+    .tab-btn[aria-selected="true"] {
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+      transition: box-shadow 200ms ease, transform 200ms ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .span-7 { grid-column: span 7; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    @media (max-width: 820px) {
+      .span-7, .span-5, .span-6 { grid-column: span 12; }
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .metric-big {
+      font-family: var(--serif);
+      font-size: 32px;
+      line-height: 1.1;
+      color: var(--text);
+      margin: 0 0 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .kv-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px 16px;
+      margin-top: 14px;
+    }
+
+    .kv-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+    }
+
+    .kv-val {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .meter-wrap {
+      margin: 14px 0 8px;
+    }
+
+    .meter-track {
+      position: relative;
+      height: 10px;
+      border-radius: 9999px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      overflow: visible;
+    }
+
+    .meter-zone-benign {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--green-bg);
+      border-radius: 9999px 0 0 9999px;
+    }
+
+    .meter-zone-path {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: var(--red-bg);
+      border-radius: 0 9999px 9999px 0;
+    }
+
+    .meter-marker {
+      position: absolute;
+      top: -4px;
+      width: 2px;
+      height: 18px;
+      background: var(--muted);
+    }
+
+    .meter-needle {
+      position: absolute;
+      top: -5px;
+      width: 12px;
+      height: 18px;
+      margin-left: -6px;
+      border-radius: 3px;
+      background: #111111;
+      border: 2px solid #FFFFFF;
+    }
+
+    .meter-scale {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .domain-track {
+      position: relative;
+      height: 22px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    .domain-block {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      border-radius: 3px;
+      background: var(--blue-bg);
+      border: 1px solid #B5DCF6;
+      min-width: 4px;
+    }
+
+    .residue-pin {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--red-fg);
+    }
+
+    .chip-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .feature-chip {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-body);
+    }
+
+    .stars-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      vertical-align: middle;
+    }
+
+    .trace-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .trace-table th,
+    .trace-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .trace-table th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: var(--surface-subtle);
+    }
+
+    .trace-table td.mono { font-family: var(--mono); font-size: 12px; }
+    .trace-table a { color: var(--blue-fg); text-decoration: none; }
+    .trace-table a:hover { text-decoration: underline; }
+
+    pre.json-view {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.55;
+      overflow-x: auto;
+      color: var(--text);
+      margin: 12px 0 0;
+    }
+
+    .empty-state {
+      background: var(--surface);
+      border: 1px dashed #D8D8D4;
+      border-radius: 10px;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark">VIA</span>
+        <span class="brand-sub">Variant Interpretation Workbench</span>
+        <span class="pill pill-neutral">Research Only · GRCh38</span>
+      </div>
+      <div class="mode-switch" role="group" aria-label="Inspection Mode">
+        <button id="modeStandard" class="mode-btn" data-mode="standard" aria-pressed="true" type="button">
+          Standard Mode
+        </button>
+        <button id="modeEval" class="mode-btn" data-mode="eval" aria-pressed="false" type="button">
+          Eval Mode (ClinVar Hidden)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="hero-kicker">M1 Live Evidence Pipeline · Public Genomics APIs</div>
+      <h1 class="hero-title" id="heroTitle">Inspect a human missense SNV</h1>
+      <p class="hero-desc">
+        Queries Ensembl VEP, gnomAD v4, AlphaMissense, UniProt, AlphaFold DB, and ClinVar (when outside eval mode)
+        with disk caching and leakage sanitization.
+      </p>
+
+      <div class="search-box">
+        <form id="inspectForm" class="search-row">
+          <input
+            id="variantInput"
+            class="variant-input"
+            type="text"
+            value="17:43094464:T:C"
+            placeholder="chr:pos:ref:alt (e.g. 17:43094464:T:C)"
+            aria-label="GRCh38 variant coordinate"
+            required
+          />
+          <button id="inspectBtn" class="btn-primary" type="submit">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span id="inspectBtnLabel">Inspect Variant</span>
+          </button>
+        </form>
+        <div class="samples-row" id="samplesRow">
+          <span class="samples-label">Verified GRCh38 samples (<kbd>Enter</kbd> to run):</span>
+        </div>
+      </div>
+
+      <div id="evalBanner" class="eval-banner" role="status">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M5 7V5a3 3 0 0 1 6 0v2" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span>
+          <strong>Eval Mode active:</strong> ClinVar lookup is disabled and VEP clinical/colocated annotations are stripped.
+        </span>
+      </div>
+
+      <div id="errorBanner" class="error-banner" role="alert"></div>
+      <div id="historyBar" class="history-bar" aria-label="Session history"></div>
+    </section>
+
+    <section id="emptyState" class="empty-state">
+      Enter a GRCh38 SNV above or click a verified sample variant to inspect live biological evidence.
+    </section>
+
+    <section id="resultSection" hidden>
+      <div class="result-header">
+        <div>
+          <h2 class="result-variant" id="resultTitle">—</h2>
+          <div class="result-sub" id="resultSubtitle">—</div>
+        </div>
+        <div id="resultBadges" class="chip-wrap"></div>
+      </div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab-btn" role="tab" aria-selected="true" data-tab="board" type="button">Evidence Board</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="trace" type="button">Tool Trace</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="json" type="button">Raw JSON</button>
+      </div>
+
+      <div id="panel-board" class="tab-panel active">
+        <div id="bentoGrid" class="bento-grid"></div>
+      </div>
+
+      <div id="panel-trace" class="tab-panel">
+        <table class="trace-table">
+          <thead>
+            <tr>
+              <th>Call ID</th>
+              <th>Tool</th>
+              <th>Status</th>
+              <th>Cache</th>
+              <th>Time (ms)</th>
+              <th>Source / Error</th>
+            </tr>
+          </thead>
+          <tbody id="traceBody"></tbody>
+        </table>
+      </div>
+
+      <div id="panel-json" class="tab-panel">
+        <div style="display:flex;justify-content:flex-end;">
+          <button id="copyJsonBtn" class="btn-secondary" type="button">Copy JSON</button>
+        </div>
+        <pre id="rawJsonPre" class="json-view"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const state = {
+        evalMode: false,
+        current: null,
+        history: [],
+        activeTab: "board"
+      };
+
+      const modeStandardBtn = document.getElementById("modeStandard");
+      const modeEvalBtn = document.getElementById("modeEval");
+      const evalBanner = document.getElementById("evalBanner");
+      const errorBanner = document.getElementById("errorBanner");
+      const samplesRow = document.getElementById("samplesRow");
+      const historyBar = document.getElementById("historyBar");
+      const inspectForm = document.getElementById("inspectForm");
+      const variantInput = document.getElementById("variantInput");
+      const inspectBtn = document.getElementById("inspectBtn");
+      const inspectBtnLabel = document.getElementById("inspectBtnLabel");
+      const emptyState = document.getElementById("emptyState");
+      const resultSection = document.getElementById("resultSection");
+      const resultTitle = document.getElementById("resultTitle");
+      const resultSubtitle = document.getElementById("resultSubtitle");
+      const resultBadges = document.getElementById("resultBadges");
+      const bentoGrid = document.getElementById("bentoGrid");
+      const traceBody = document.getElementById("traceBody");
+      const rawJsonPre = document.getElementById("rawJsonPre");
+      const copyJsonBtn = document.getElementById("copyJsonBtn");
+
+      function el(tag, props, children) {
+        const node = document.createElement(tag);
+        if (props) {
+          for (const [k, v] of Object.entries(props)) {
+            if (k === "className") node.className = v;
+            else if (k === "text") node.textContent = v;
+            else if (k === "style") node.setAttribute("style", v);
+            else node.setAttribute(k, v);
+          }
+        }
+        if (children) {
+          for (const ch of Array.isArray(children) ? children : [children]) {
+            if (ch !== null && ch !== undefined) {
+              node.appendChild(typeof ch === "string" ? document.createTextNode(ch) : ch);
+            }
+          }
+        }
+        return node;
+      }
+
+      function statusPill(status) {
+        const map = {
+          found: ["pill-green", "Found"],
+          not_found: ["pill-yellow", "Not Found"],
+          error: ["pill-red", "Error"]
+        };
+        const [cls, label] = map[status] || ["pill-neutral", String(status || "unknown")];
+        return el("span", { className: "pill " + cls, text: label });
+      }
+
+      function formatAf(af) {
+        if (af === null || af === undefined) return "—";
+        if (af === 0) return "0";
+        if (af >= 0.001) return (af * 100).toFixed(3) + "% (" + af.toExponential(2) + ")";
+        return af.toExponential(2);
+      }
+
+      function kv(label, value) {
+        return el("div", {}, [
+          el("div", { className: "kv-label", text: label }),
+          el("div", { className: "kv-val", text: value === null || value === undefined || value === "" ? "—" : String(value) })
+        ]);
+      }
+
+      function starRowSvg(filled) {
+        const wrap = el("span", { className: "stars-row", "aria-label": filled + " of 4 review stars" });
+        const ns = "http://www.w3.org/2000/svg";
+        for (let i = 0; i < 4; i++) {
+          const svg = document.createElementNS(ns, "svg");
+          svg.setAttribute("width", "14");
+          svg.setAttribute("height", "14");
+          svg.setAttribute("viewBox", "0 0 16 16");
+          const poly = document.createElementNS(ns, "polygon");
+          poly.setAttribute("points", "8,1.5 10,5.7 14.6,6.3 11.2,9.5 12.1,14.1 8,11.9 3.9,14.1 4.8,9.5 1.4,6.3 6,5.7");
+          poly.setAttribute("fill", i < filled ? "#956400" : "none");
+          poly.setAttribute("stroke", i < filled ? "#956400" : "#C9C8C3");
+          poly.setAttribute("stroke-width", "1.3");
+          svg.appendChild(poly);
+          wrap.appendChild(svg);
+        }
+        return wrap;
+      }
+
+      function setMode(evalMode) {
+        state.evalMode = evalMode;
+        modeStandardBtn.setAttribute("aria-pressed", String(!evalMode));
+        modeEvalBtn.setAttribute("aria-pressed", String(evalMode));
+        evalBanner.classList.toggle("visible", evalMode);
+      }
+
+      modeStandardBtn.addEventListener("click", () => setMode(false));
+      modeEvalBtn.addEventListener("click", () => setMode(true));
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = btn.getAttribute("data-tab");
+          state.activeTab = target;
+          document.querySelectorAll(".tab-btn").forEach((b) => {
+            b.setAttribute("aria-selected", String(b.getAttribute("data-tab") === target));
+          });
+          document.querySelectorAll(".tab-panel").forEach((p) => {
+            p.classList.toggle("active", p.id === "panel-" + target);
+          });
+        });
+      });
+
+      copyJsonBtn.addEventListener("click", async () => {
+        if (!state.current) return;
+        const text = JSON.stringify(state.current, null, 2);
+        try {
+          await navigator.clipboard.writeText(text);
+          copyJsonBtn.textContent = "Copied";
+          setTimeout(() => { copyJsonBtn.textContent = "Copy JSON"; }, 1400);
+        } catch {
+          copyJsonBtn.textContent = "Select & Copy";
+        }
+      });
+
+      function renderCardShell(title, status, spanClass) {
+        const card = el("article", { className: "card " + spanClass });
+        const head = el("div", { className: "card-head" }, [
+          el("h3", { className: "card-title", text: title }),
+          statusPill(status)
+        ]);
+        card.appendChild(head);
+        return card;
+      }
+
+      function renderVepCard(tc) {
+        const card = renderCardShell("Ensembl VEP Consequence", tc.status, "span-7");
+        if (tc.status !== "found") {
+          card.appendChild(el("p", { text: tc.error || "No transcript consequence returned." }));
+          return card;
+        }
+        const d = tc.data;
+        const heading = [d.gene_symbol || "Unknown Gene", d.hgvsp ? d.hgvsp.split(":").pop() : ""].filter(Boolean).join(" · ");
+        card.appendChild(el("div", { className: "metric-big", text: heading || d.most_severe_consequence || "Annotated" }));
+
+        const chips = el("div", { className: "chip-wrap" });
+        (d.consequence_terms || []).forEach((t) => chips.appendChild(el("span", { className: "feature-chip", text: t })));
+        if (d.impact) chips.appendChild(el("span", { className: "pill pill-blue", text: "Impact: " + d.impact }));
+        card.appendChild(chips);
+
+        const kvs = el("div", { className: "kv-list" }, [
+          kv("Transcript", (d.transcript_id || "—") + (d.canonical ? " (canonical)" : "")),
+          kv("HGVSc", d.hgvsc),
+          kv("Amino Acid", d.amino_acids ? d.amino_acids + " @ pos " + (d.protein_start || "?") : "—"),
+          kv("UniProt", d.uniprot_accession),
+          kv("SIFT", d.sift_prediction ? d.sift_prediction + " (" + d.sift_score + ")" : "—"),
+          kv("PolyPhen", d.polyphen_prediction ? d.polyphen_prediction + " (" + d.polyphen_score + ")" : "—")
+        ]);
+        card.appendChild(kvs);
+        return card;
+      }
+
+      function renderAlphaMissenseCard(tc) {
+        const card = renderCardShell("AlphaMissense Score", tc.status, "span-5");
+        if (tc.status !== "found") {
+          card.appendChild(el("p", { text: tc.error || "No AlphaMissense score available for this variant." }));
+          return card;
+        }
+        const d = tc.data;
+        const score = Number(d.score);
+        const clsTag = d.am_class === "likely_pathogenic"
+          ? "pill-red"
+          : d.am_class === "likely_benign"
+            ? "pill-green"
+            : "pill-yellow";
+
+        card.appendChild(el("div", { style: "display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;" }, [
+          el("div", { className: "metric-big", text: Number.isFinite(score) ? score.toFixed(4) : "—" }),
+          el("span", { className: "pill " + clsTag, text: (d.am_class || "ambiguous").replace("_", " ") })
+        ]));
+
+        const track = el("div", { className: "meter-track" }, [
+          el("div", { className: "meter-zone-benign", style: "width:34%;" }),
+          el("div", { className: "meter-zone-path", style: "width:43.6%;" }),
+          el("div", { className: "meter-marker", style: "left:34%;", title: "0.34 benign cutoff" }),
+          el("div", { className: "meter-marker", style: "left:56.4%;", title: "0.564 pathogenic cutoff" }),
+          el("div", { className: "meter-needle", style: "left:" + Math.max(0, Math.min(100, score * 100)) + "%;" })
+        ]);
+        card.appendChild(el("div", { className: "meter-wrap" }, [
+          track,
+          el("div", { className: "meter-scale" }, [
+            el("span", { text: "0.00" }),
+            el("span", { text: "0.34 benign" }),
+            el("span", { text: "0.564 path" }),
+            el("span", { text: "1.00" })
+          ])
+        ]));
+
+        card.appendChild(el("div", { className: "kv-list" }, [
+          kv("Transcript", d.transcript_id),
+          kv("Source", d.source)
+        ]));
+        return card;
+      }
+
+      function renderGnomadCard(tc) {
+        const card = renderCardShell("gnomAD v4 Population Frequency", tc.status, "span-6");
+        if (tc.status === "not_found") {
+          card.appendChild(el("div", { className: "metric-big", text: "Absent in gnomAD v4" }));
+          card.appendChild(el("p", { text: "Variant was not observed in gnomAD v4 exomes or genomes (PM2-supporting context)." }));
+          return card;
+        }
+        if (tc.status !== "found") {
+          card.appendChild(el("p", { text: tc.error || "gnomAD lookup failed." }));
+          return card;
+        }
+        const d = tc.data;
+        const af = d.combined_af;
+        const ba1 = af !== null && af > 0.05;
+
+        card.appendChild(el("div", { style: "display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;" }, [
+          el("div", { className: "metric-big", text: formatAf(af) }),
+          ba1 ? el("span", { className: "pill pill-green", text: "AF > 5% (BA1)" }) : null
+        ]));
+
+        // Log scale from 1e-6 (0%) to 1.0 (100%); BA1 0.05 sits at (log10(0.05)+6)/6 = ~78.3%
+        const pct = af && af > 0 ? Math.max(2, Math.min(100, ((Math.log10(af) + 6) / 6) * 100)) : 0;
+        const ba1Pct = ((Math.log10(0.05) + 6) / 6) * 100;
+        const track = el("div", { className: "meter-track" }, [
+          el("div", { className: "meter-zone-path", style: "width:" + (100 - ba1Pct).toFixed(1) + "%;background:var(--green-bg);" }),
+          el("div", { className: "meter-marker", style: "left:" + ba1Pct.toFixed(1) + "%;" }),
+          af && af > 0 ? el("div", { className: "meter-needle", style: "left:" + pct.toFixed(1) + "%;" }) : null
+        ]);
+        card.appendChild(el("div", { className: "meter-wrap" }, [
+          track,
+          el("div", { className: "meter-scale" }, [
+            el("span", { text: "1e-6" }),
+            el("span", { text: "1e-4" }),
+            el("span", { text: "5% BA1" }),
+            el("span", { text: "100%" })
+          ])
+        ]));
+
+        card.appendChild(el("div", { className: "kv-list" }, [
+          kv("Combined AC / AN", d.combined_an ? d.combined_ac + " / " + d.combined_an : "—"),
+          kv("Popmax", d.popmax_population ? d.popmax_population.toUpperCase() + " (" + formatAf(d.popmax_af) + ")" : "—"),
+          kv("Exome AF", formatAf(d.exome_af)),
+          kv("Genome AF", formatAf(d.genome_af)),
+          kv("QC Filters", (d.filters || []).length ? d.filters.join(", ") : "PASS (none)")
+        ]));
+        return card;
+      }
+
+      function renderAlphaFoldCard(tc) {
+        const card = renderCardShell("AlphaFold DB Structure Confidence", tc.status, "span-6");
+        if (tc.status !== "found") {
+          card.appendChild(el("p", { text: (tc.data && tc.data.reason) || tc.error || "No AlphaFold confidence available." }));
+          return card;
+        }
+        const d = tc.data;
+        const score = Number(d.plddt);
+        const bandCls = d.confidence_band === "very_high" || d.confidence_band === "confident"
+          ? "pill-blue"
+          : d.confidence_band === "low"
+            ? "pill-yellow"
+            : "pill-red";
+
+        card.appendChild(el("div", { style: "display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;" }, [
+          el("div", { className: "metric-big", text: Number.isFinite(score) ? score.toFixed(2) + " pLDDT" : "—" }),
+          el("span", { className: "pill " + bandCls, text: (d.confidence_band || "").replace("_", " ") })
+        ]));
+
+        const track = el("div", { className: "meter-track" }, [
+          el("div", { className: "meter-needle", style: "left:" + Math.max(0, Math.min(100, score)) + "%;" })
+        ]);
+        card.appendChild(el("div", { className: "meter-wrap" }, [
+          track,
+          el("div", { className: "meter-scale" }, [
+            el("span", { text: "0 disordered" }),
+            el("span", { text: "50" }),
+            el("span", { text: "70 confident" }),
+            el("span", { text: "90+" })
+          ])
+        ]));
+
+        card.appendChild(el("div", { className: "kv-list" }, [
+          kv("Entry ID", d.entry_id),
+          kv("Residue", d.residue),
+          kv("Global Mean pLDDT", d.global_mean_plddt),
+          kv("Model Version", d.model_version ? "v" + d.model_version : "—")
+        ]));
+        return card;
+      }
+
+      function renderUniProtCard(tc, evalMode) {
+        const span = evalMode ? "span-7" : "span-6";
+        const card = renderCardShell("UniProt Protein Domains & Residue Features", tc.status, span);
+        if (tc.status !== "found") {
+          card.appendChild(el("p", { text: (tc.data && tc.data.reason) || tc.error || "No UniProt mapping available." }));
+          return card;
+        }
+        const d = tc.data;
+        const length = Number(d.protein_length) || 0;
+        const residue = Number(d.residue) || 0;
+        card.appendChild(el("div", { className: "kv-list", style: "margin-top:0;margin-bottom:10px;" }, [
+          kv("Entry", (d.entry_id || "") + " (" + d.accession + ")"),
+          kv("Protein Length", length ? length + " aa" : "—"),
+          kv("Target Residue", "pos " + residue)
+        ]));
+
+        if (length > 0) {
+          const track = el("div", { className: "domain-track", title: "Residue " + residue + " of " + length });
+          (d.domains || []).forEach((dom) => {
+            const left = Math.max(0, ((dom.start - 1) / length) * 100);
+            const width = Math.max(0.5, ((dom.end - dom.start + 1) / length) * 100);
+            track.appendChild(el("div", {
+              className: "domain-block",
+              style: "left:" + left.toFixed(2) + "%;width:" + width.toFixed(2) + "%;",
+              title: dom.type + ": " + (dom.description || "unnamed") + " (" + dom.start + "-" + dom.end + ")"
+            }));
+          });
+          if (residue >= 1 && residue <= length) {
+            const pinLeft = ((residue - 0.5) / length) * 100;
+            track.appendChild(el("div", { className: "residue-pin", style: "left:" + pinLeft.toFixed(2) + "%;" }));
+          }
+          card.appendChild(track);
+        }
+
+        const overlapWrap = el("div", { className: "chip-wrap" });
+        const overlapping = d.overlapping_features || [];
+        if (overlapping.length === 0) {
+          overlapWrap.appendChild(el("span", { className: "feature-chip", text: "No UniProt domain/site overlapping residue " + residue }));
+        } else {
+          overlapping.forEach((f) => {
+            overlapWrap.appendChild(el("span", {
+              className: "feature-chip",
+              text: f.type + (f.description ? ": " + f.description : "") + " (" + f.start + "-" + f.end + ")"
+            }));
+          });
+        }
+        card.appendChild(overlapWrap);
+        return card;
+      }
+
+      function renderClinVarCard(tc, evalMode) {
+        if (evalMode || !tc) {
+          const card = el("article", { className: "card span-5" });
+          card.appendChild(el("div", { className: "card-head" }, [
+            el("h3", { className: "card-title", text: "ClinVar Ground Truth" }),
+            el("span", { className: "pill pill-blue", text: "Locked · Eval Mode" })
+          ]));
+          card.appendChild(el("div", { className: "metric-big", text: "Hidden from VIA" }));
+          card.appendChild(el("p", {
+            text: "Eval mode disables clinvar_lookup and strips VEP colocated clinical annotations so classification cannot leak ground-truth labels."
+          }));
+          return card;
+        }
+
+        const card = renderCardShell("ClinVar Reference (Non-Eval Mode)", tc.status, "span-6");
+        if (tc.status !== "found") {
+          card.appendChild(el("p", { text: tc.error || "No exact GRCh38 ClinVar record found." }));
+          return card;
+        }
+        const d = tc.data;
+        const low = String(d.classification || "").toLowerCase();
+        const clsPill = low.includes("pathogenic")
+          ? "pill-red"
+          : low.includes("benign")
+            ? "pill-green"
+            : "pill-yellow";
+
+        card.appendChild(el("div", { style: "display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;" }, [
+          el("div", { className: "metric-big", style: "margin:0;", text: d.classification || "Unclassified" }),
+          el("span", { className: "pill " + clsPill, text: d.accession || "ClinVar" }),
+          starRowSvg(Number(d.stars) || 0)
+        ]));
+        card.appendChild(el("div", { className: "kv-list" }, [
+          kv("Review Status", d.review_status),
+          kv("Last Evaluated", d.last_evaluated),
+          kv("Conditions", (d.conditions || []).join("; ") || "—")
+        ]));
+        return card;
+      }
+
+      function renderResult(res) {
+        state.current = res;
+        emptyState.hidden = true;
+        resultSection.hidden = false;
+
+        const v = res.variant;
+        const byTool = Object.fromEntries((res.tool_calls || []).map((tc) => [tc.tool, tc]));
+        const vepData = byTool.vep_consequence && byTool.vep_consequence.status === "found"
+          ? byTool.vep_consequence.data
+          : null;
+
+        const geneLabel = vepData && vepData.gene_symbol ? vepData.gene_symbol : v.canonical_id;
+        const aaLabel = vepData && vepData.hgvsp ? " · " + vepData.hgvsp.split(":").pop() : "";
+        resultTitle.textContent = geneLabel + aaLabel;
+        resultSubtitle.textContent = "GRCh38 " + v.canonical_id + " · Inspected " + res.timestamp;
+
+        resultBadges.replaceChildren();
+        resultBadges.appendChild(
+          el("span", {
+            className: "pill " + (res.eval_mode ? "pill-blue" : "pill-neutral"),
+            text: res.eval_mode ? "Eval Mode" : "Standard Mode"
+          })
+        );
+        if (res.flagged_tool_error) {
+          resultBadges.appendChild(el("span", { className: "pill pill-red", text: "Flagged Tool Error" }));
+        }
+
+        bentoGrid.replaceChildren();
+        if (byTool.vep_consequence) bentoGrid.appendChild(renderVepCard(byTool.vep_consequence));
+        if (byTool.alphamissense_score) bentoGrid.appendChild(renderAlphaMissenseCard(byTool.alphamissense_score));
+        if (byTool.gnomad_frequency) bentoGrid.appendChild(renderGnomadCard(byTool.gnomad_frequency));
+        if (byTool.alphafold_plddt) bentoGrid.appendChild(renderAlphaFoldCard(byTool.alphafold_plddt));
+        if (byTool.uniprot_features) bentoGrid.appendChild(renderUniProtCard(byTool.uniprot_features, res.eval_mode));
+        bentoGrid.appendChild(renderClinVarCard(byTool.clinvar_lookup || null, res.eval_mode));
+
+        traceBody.replaceChildren();
+        (res.tool_calls || []).forEach((tc) => {
+          const sourceNode = tc.error
+            ? el("span", { style: "color:var(--red-fg);", text: tc.error })
+            : tc.source_url
+              ? el("a", { href: tc.source_url, target: "_blank", rel: "noopener noreferrer", text: tc.source_url })
+              : el("span", { text: "—" });
+          const row = el("tr", {}, [
+            el("td", { className: "mono", text: tc.call_id }),
+            el("td", { className: "mono", text: tc.tool }),
+            el("td", {}, statusPill(tc.status)),
+            el("td", { text: tc.cached ? "hit" : "live" }),
+            el("td", { className: "mono", text: tc.elapsed_ms !== null && tc.elapsed_ms !== undefined ? String(tc.elapsed_ms) : "—" }),
+            el("td", {}, sourceNode)
+          ]);
+          traceBody.appendChild(row);
+        });
+
+        rawJsonPre.textContent = JSON.stringify(res, null, 2);
+        renderHistory();
+      }
+
+      function renderHistory() {
+        historyBar.replaceChildren();
+        if (!state.history.length) return;
+        historyBar.appendChild(el("span", { className: "samples-label", text: "Session history:" }));
+        state.history.forEach((item) => {
+          const isActive = state.current
+            && item.variant.canonical_id === state.current.variant.canonical_id
+            && item.eval_mode === state.current.eval_mode;
+          const btn = el("button", {
+            className: "history-item" + (isActive ? " active" : ""),
+            type: "button",
+            text: item.variant.canonical_id + (item.eval_mode ? " [eval]" : "")
+          });
+          btn.addEventListener("click", () => renderResult(item));
+          historyBar.appendChild(btn);
+        });
+      }
+
+      async function runInspect(variantStr) {
+        errorBanner.classList.remove("visible");
+        inspectBtn.disabled = true;
+        inspectBtnLabel.textContent = "Inspecting...";
+        try {
+          const resp = await fetch("/api/inspect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ variant: variantStr, eval_mode: state.evalMode })
+          });
+          const data = await resp.json();
+          if (!resp.ok) {
+            throw new Error(data.error || ("HTTP " + resp.status));
+          }
+          const idx = state.history.findIndex(
+            (h) => h.variant.canonical_id === data.variant.canonical_id && h.eval_mode === data.eval_mode
+          );
+          if (idx >= 0) state.history.splice(idx, 1);
+          state.history.unshift(data);
+          if (state.history.length > 8) state.history.pop();
+          renderResult(data);
+        } catch (err) {
+          errorBanner.textContent = "Inspection failed: " + err.message;
+          errorBanner.classList.add("visible");
+        } finally {
+          inspectBtn.disabled = false;
+          inspectBtnLabel.textContent = "Inspect Variant";
+        }
+      }
+
+      inspectForm.addEventListener("submit", (evt) => {
+        evt.preventDefault();
+        runInspect(variantInput.value.trim());
+      });
+
+      fetch("/api/health")
+        .then((r) => r.json())
+        .then((info) => {
+          (info.samples || []).forEach((s) => {
+            const btn = el("button", { className: "sample-chip", type: "button", title: s.note || "" }, [
+              el("strong", { text: s.label }),
+              el("span", { className: "sample-coord", text: s.variant })
+            ]);
+            btn.addEventListener("click", () => {
+              variantInput.value = s.variant;
+              runInspect(s.variant);
+            });
+            samplesRow.appendChild(btn);
+          });
+        })
+        .catch(() => {});
+    })();
+  </script>
+</body>
+</html>
