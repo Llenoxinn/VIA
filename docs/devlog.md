@@ -14,3 +14,4 @@
 - Mistake: example variant 17:43094464:C:T had the wrong ref (it is T). Fix: P7 in AGENTS.md (check ref before using a variant ID).
 - Installed Python 3.13.17 (winget, user scope); created .venv with py -3.13; smoke test passes in it.
 - Next: user adds GEMINI_API_KEY to .env; rerun smoke test; pin Flash model, note limits + training cutoff.
+- Data prep: downloaded data/variant_summary.txt.gz (458.6 MB) and data/AlphaMissense_hg38.tsv.gz (643.0 MB) into git-ignored data/; verified gzip headers (note: AlphaMissense header specifies CC BY-NC-SA 4.0 for P6 check).
