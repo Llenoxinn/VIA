@@ -8,7 +8,7 @@ A tool-using LLM agent that reads public evidence about a DNA variant and writes
 M0 — docs and prerequisites. See `PLAN.md`.
 
 ## Prerequisites
-- **Python 3.12+** (3.14 installed here; check `python --version`)
+- **Python 3.12+** (3.13 used here; on Windows create the venv with `py -3.13 -m venv .venv`)
 - **Git**
 - **Gemini API key** (free, from aistudio.google.com), put in `.env` — see `.env.example`
 - **Disk:** ~5 GB free for ClinVar + AlphaMissense downloads (into `data/`, never committed)
@@ -16,7 +16,7 @@ M0 — docs and prerequisites. See `PLAN.md`.
 
 ## Setup (once M1 adds `pyproject.toml`)
 ```
-python -m venv .venv
+py -3.13 -m venv .venv
 .venv\Scripts\activate
 pip install -e ".[dev]"
 copy .env.example .env   # then add your key

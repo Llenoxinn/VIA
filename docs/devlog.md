@@ -12,4 +12,5 @@
 - M0 (partial): pushed bb0c8ad. Added scripts/smoke_apis.py (stdlib only, LIVE). All 6 data sources OK. Gemini skipped (no key yet).
 - W5 review: smoke script now fails on missing fields and checks the ref itself; .env quotes stripped. Rejected: "results unverified" (script was run, output seen).
 - Mistake: example variant 17:43094464:C:T had the wrong ref (it is T). Fix: P7 in AGENTS.md (check ref before using a variant ID).
-- Blocked: venv. Only Windows Python 3.10 (official) and MSYS/mingw 3.14 exist; plan needs 3.12+ with standard wheels. Waiting on user to install Python 3.12/3.13.
+- Installed Python 3.13.17 (winget, user scope); created .venv with py -3.13; smoke test passes in it.
+- Next: user adds GEMINI_API_KEY to .env; rerun smoke test; pin Flash model, note limits + training cutoff.
