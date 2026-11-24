@@ -5,7 +5,7 @@ Status: planned (M0). Update as code lands (P5).
 ## Flow
 ```
 variant (chr:pos:ref:alt)
-   └─► agent loop (Claude, tool calling)
+   └─► agent loop (Gemini Flash, tool calling)
           ├─ vep_consequence      → gene, transcript, amino-acid change
           ├─ gnomad_frequency     → allele frequency
           ├─ alphamissense_score  → 0–1 score
@@ -26,7 +26,7 @@ src/via/
   schema.py     Variant, ToolResult, Report
   cache.py      disk cache for HTTP (in .cache/, git-ignored)
 eval/
-  dataset.py    ClinVar sampling (seeded, ≥ 3-star, post-cutoff subset by date last evaluated)
+  dataset.py    ClinVar sets per PLAN §3.3 (seeded, missense only)
   baselines.py  gnomAD rule, AlphaMissense threshold, LLM no-tools
   run.py        runs methods, writes eval/results/ (git-ignored)
 tests/          offline, fixtures in tests/fixtures/; test_leakage.py (P1)
@@ -46,5 +46,6 @@ data/           downloads, git-ignored
 
 ## Key decisions
 - **Leakage guard lives in the tool layer**, not the prompt: in eval mode the ClinVar tool is not registered and VEP clinical fields are stripped before the LLM sees them.
+- **Tool result states:** `found` / `not_found` / `error`; only the first two are cached, so an outage never looks like "absent from gnomAD".
 - **Eval-mode cache:** VEP responses are stripped before caching *and* on read, so an old cache entry cannot leak ClinVar fields.
-- **Abstention:** `uncertain` *is* the abstain answer. Accuracy/F1 are computed on cases labelled pathogenic or benign; coverage = share not `uncertain`. It is never counted as an error.
+- **Abstention:** `uncertain` *is* the abstain answer. Headline balanced accuracy counts it as wrong; F1 is on answered cases; coverage = share not `uncertain` (PLAN §3.4).
