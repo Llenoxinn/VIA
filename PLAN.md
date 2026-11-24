@@ -4,7 +4,7 @@
 Build and honestly evaluate a tool-using LLM agent that classifies **missense** single-nucleotide variants (GRCh38) as likely pathogenic / likely benign / uncertain, with a cited report. Outcome: a public repo, a results table against baselines, a failure analysis, and one resume line backed by numbers.
 
 ## 2. Success criteria
-- `via classify 17:43094464:C:T` (example) prints a validated JSON report in under ~60 s.
+- `via classify 17:43094464:T:C` (example) prints a validated JSON report in under ~60 s.
 - The full eval (all sets in §3.3) runs end to end from one command, with a fixed seed.
 - Results table: agent vs gnomAD-only rule vs AlphaMissense alone vs LLM-no-tools, scored as in §3.4.
 - Zero leakage: a test proves ClinVar data for the test variant never reaches the agent in eval mode.
