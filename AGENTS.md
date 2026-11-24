@@ -65,3 +65,4 @@ The owner doesn't write the code, but must be able to explain the app (in an int
 - **P4. Reproducible.** Fixed random seeds, pinned dependency versions, and the model ID recorded in every eval result.
 - **P5. Docs follow code.** If a change alters behaviour described in `ARCHITECTURE.md`, `PLAN.md` or `README.md`, update the doc in the same commit.
 - **P6. Respect data terms.** Check a source's licence before using it; note it in `ARCHITECTURE.md` §Data sources. Use polite rate limits and caching for public APIs.
+- **P7. Check every example variant.** Before a variant ID goes into docs, tests or scripts, confirm its ref base with Ensembl `/sequence/region` (GRCh38). Invented IDs fail silently or loudly.

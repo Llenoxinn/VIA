@@ -9,3 +9,7 @@
 - Grilled the plan; decisions D1–D8 recorded in PLAN.md §3–4 (3-star main + 2-star + post-cutoff sets, merged labels, missense only, published baseline cut-offs, Gemini Flash free tier, balanced accuracy headline, found/not_found/error states, no deadline).
 - W5 review 2: fixed set overlap, post-cutoff definition, metric formula, baseline not_found handling, Groq wording, placeholder model ID. Rejected: mojibake (display artefact, file is valid UTF-8) and G5 (push was user-requested).
 - Next: then M0 env setup, check Gemini limits and training cutoff, smoke script.
+- M0 (partial): pushed bb0c8ad. Added scripts/smoke_apis.py (stdlib only, LIVE). All 6 data sources OK. Gemini skipped (no key yet).
+- W5 review: smoke script now fails on missing fields and checks the ref itself; .env quotes stripped. Rejected: "results unverified" (script was run, output seen).
+- Mistake: example variant 17:43094464:C:T had the wrong ref (it is T). Fix: P7 in AGENTS.md (check ref before using a variant ID).
+- Blocked: venv. Only Windows Python 3.10 (official) and MSYS/mingw 3.14 exist; plan needs 3.12+ with standard wheels. Waiting on user to install Python 3.12/3.13.
