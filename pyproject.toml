@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=75.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "via"
+version = "0.1.0"
+description = "Variant Interpretation Agent for GRCh38 missense SNVs"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx==0.28.1",
+    "pydantic==2.14.4",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest==9.2.0",
+]
+
+[project.scripts]
+via = "via.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+via = ["static/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
