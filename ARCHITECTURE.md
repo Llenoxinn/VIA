@@ -39,7 +39,7 @@ data/           downloads, git-ignored
 |---|---|---|
 | Ensembl VEP REST | rest.ensembl.org | Open, rate-limited (~15 req/s) |
 | gnomAD | GraphQL API, gnomad.broadinstitute.org | ODbL / open |
-| AlphaMissense | Precomputed TSV (Zenodo/GCS) | CC BY 4.0 (check) |
+| AlphaMissense | Precomputed TSV (Zenodo/GCS) | CC BY-NC-SA 4.0 |
 | UniProt | rest.uniprot.org | CC BY 4.0 |
 | AlphaFold DB | alphafold.ebi.ac.uk API | CC BY 4.0 |
 | ClinVar | NCBI FTP variant_summary.txt.gz | Public domain |
