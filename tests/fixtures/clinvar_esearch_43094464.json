@@ -1,0 +1,33 @@
+{
+  "header": {
+    "type": "esearch",
+    "version": "0.3"
+  },
+  "esearchresult": {
+    "count": "3",
+    "retmax": "3",
+    "retstart": "0",
+    "idlist": [
+      "3386222",
+      "54115",
+      "41803"
+    ],
+    "translationset": [],
+    "translationstack": [
+      {
+        "term": "17[chr]",
+        "field": "chr",
+        "count": "283410",
+        "explode": "N"
+      },
+      {
+        "term": "000043094464[chrpos38]",
+        "field": "chrpos38",
+        "count": "3",
+        "explode": "N"
+      },
+      "AND"
+    ],
+    "querytranslation": "17[chr] AND 000043094464[chrpos38]"
+  }
+}
